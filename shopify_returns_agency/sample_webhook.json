@@ -1,0 +1,110 @@
+{
+  "id": "webhook_test_12345",
+  "order_id": "order_67890",
+  "amount": 99.99,
+  "currency": "USD",
+  "created_at": "2025-06-15T10:30:00Z",
+  "line_items": [
+    {
+      "id": "line_item_123",
+      "product_id": "product_456",
+      "variant_id": "variant_789",
+      "title": "Premium Cotton T-Shirt",
+      "quantity": 1,
+      "price": "29.99",
+      "sku": "TSHIRT-PREM-001",
+      "vendor": "Premium Apparel Co.",
+      "product_type": "Apparel",
+      "tags": "clothing,tshirt,cotton"
+    },
+    {
+      "id": "line_item_124",
+      "product_id": "product_457",
+      "variant_id": "variant_790",
+      "title": "Classic Denim Jeans",
+      "quantity": 1,
+      "price": "69.99",
+      "sku": "JEANS-CLASSIC-001",
+      "vendor": "Premium Apparel Co.",
+      "product_type": "Apparel",
+      "tags": "clothing,jeans,denim"
+    }
+  ],
+  "refund_line_items": [
+    {
+      "id": "refund_line_item_001",
+      "line_item_id": "line_item_123",
+      "quantity": 1,
+      "subtotal": "29.99",
+      "total_tax": "2.40",
+      "reason": "defective"
+    }
+  ],
+  "reason": "defective",
+  "note": "Customer reported the t-shirt has a manufacturing defect in the fabric",
+  "email": "customer@example.com",
+  "customer": {
+    "id": "customer_001",
+    "email": "customer@example.com",
+    "first_name": "John",
+    "last_name": "Doe",
+    "phone": "+1-555-123-4567"
+  },
+  "billing_address": {
+    "first_name": "John",
+    "last_name": "Doe",
+    "address1": "123 Main Street",
+    "city": "Anytown",
+    "province": "CA",
+    "country": "United States",
+    "zip": "12345"
+  },
+  "shipping_address": {
+    "first_name": "John",
+    "last_name": "Doe",
+    "address1": "123 Main Street",
+    "city": "Anytown",
+    "province": "CA",
+    "country": "United States",
+    "zip": "12345"
+  },
+  "order": {
+    "id": "order_67890",
+    "order_number": "#1001",
+    "created_at": "2025-06-15T10:30:00Z",
+    "updated_at": "2025-06-15T10:30:00Z",
+    "total_price": "102.38",
+    "subtotal_price": "99.98",
+    "total_tax": "2.40",
+    "currency": "USD",
+    "financial_status": "paid",
+    "fulfillment_status": "fulfilled"
+  },
+  "gateway": "shopify_payments",
+  "kind": "refund",
+  "status": "pending",
+  "test": false,
+  "user_id": null,
+  "location_id": null,
+  "source_name": "web",
+  "order_adjustments": [],
+  "transactions": [
+    {
+      "id": "transaction_001",
+      "order_id": "order_67890",
+      "kind": "refund",
+      "gateway": "shopify_payments",
+      "status": "pending",
+      "message": "Refund requested for defective item",
+      "created_at": "2025-06-28T21:00:00Z",
+      "amount": "32.39",
+      "currency": "USD",
+      "parent_id": "transaction_parent_001"
+    }
+  ],
+  "duties": [],
+  "additional_fees": [],
+  "return_status": "pending_review",
+  "processed_at": null,
+  "refund_duties": []
+} 

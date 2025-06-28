@@ -1,0 +1,61 @@
+# shopify_returns_agency
+
+---
+
+- **Purpose:** Automate the approval/denial of Shopify refund webhooks for apparel brands by checking return policy rules, logging all actions, and reducing manual workload and errors. Designed for mid-market Shopify stores needing efficiency and auditability.
+- **Communication Flows:**
+    - **Between Agents:**
+        - For MVP, only one agent (ReturnsAgent). If we add more (e.g., NotificationAgent, FraudAgent), they'll interact via shared state/logging.
+    - **Agent to User Communication:**
+        - Agent receives webhook POST from Shopify (Flask endpoint), processes the event, and logs the result to a log file or dashboard. Optional: email or dashboard update in future versions.
+
+---
+
+## ReturnsAgent
+
+### **Role within the Agency**
+
+Receives Shopify refund webhooks, checks policy, makes approve/deny/flag decisions, logs each action.
+
+### Tools
+
+- **PolicyChecker:**
+    - **Description**: Checks if return request meets policy (window, eligibility, reason)
+    - **Inputs**:
+        - order_date (str) - Date the order was placed
+        - item_id (str) - ID of the item being returned
+        - return_reason (str) - Reason for the return
+    - **Validation**:
+        - Fields present
+        - Return within allowed period
+        - Item allowed
+    - **Core Functions:** Validate return window, check eligibility, output decision
+    - **APIs**: None (logic is local for now)
+    - **Output**: JSON: { "decision": "approve/deny/flag", "reason": "..." }
+
+- **ActionLogger:**
+    - **Description**: Logs every action/decision for traceability
+    - **Inputs**:
+        - event_id (str) - Unique event identifier
+        - decision (str) - Decision made (approve/deny/flag)
+        - reason (str) - Reason for the decision
+    - **Validation**:
+        - All fields present
+    - **Core Functions:** Write log entry to file/stdout
+    - **APIs**: None
+    - **Output**: Log entry confirmation string
+
+- **RefundProcessor:**
+    - **Description**: Processes (logs) refund action
+    - **Inputs**:
+        - order_id (str) - Shopify order ID
+        - amount (float) - Refund amount
+        - decision (str) - Decision made (approve/deny/flag)
+    - **Validation**:
+        - Amount > 0
+        - Valid order_id
+    - **Core Functions:** Log refund attempt/action
+    - **APIs**: None (for now)
+    - **Output**: Confirmation string
+
+--- 
