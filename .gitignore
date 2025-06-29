@@ -148,6 +148,12 @@ Thumbs.db
 shopify_returns_agency/logs/*.log
 *.log
 
+# Security - Logs and sensitive files
+shopify_returns_chat_agent/logs/
+**/logs/
+**/__pycache__/
+*.jsonl
+
 # Added by Claude Task Master
 tasks.json
 tasks/ 
