@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Dict, Any, Optional
 import os
@@ -39,6 +40,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Mount static files (for frontend assets if needed)
+if os.path.exists("frontend"):
+    app.mount("/static", StaticFiles(directory="frontend"), name="static")
+
 # Dependency to get agent config
 def get_agent_config():
     """Get configuration from environment variables"""
@@ -73,6 +78,30 @@ class MessageResponse(BaseModel):
     status: str
     metadata: Optional[Dict[str, Any]] = None
 
+@app.get("/", response_class=HTMLResponse)
+async def serve_chat_page():
+    """Serve the standalone chat interface"""
+    try:
+        # Read the HTML file
+        html_path = os.path.join("frontend", "standalone-chat.html")
+        with open(html_path, "r", encoding="utf-8") as f:
+            html_content = f.read()
+        return HTMLResponse(content=html_content)
+    except FileNotFoundError:
+        return HTMLResponse(
+            content="""
+            <html>
+                <head><title>Chat Not Found</title></head>
+                <body>
+                    <h1>Chat Interface Not Found</h1>
+                    <p>The chat interface file is missing. Please check your deployment.</p>
+                    <p><a href="/health">Check API Health</a></p>
+                </body>
+            </html>
+            """,
+            status_code=404
+        )
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
@@ -89,7 +118,8 @@ async def health_check():
         
         return {
             "status": "healthy",
-            "environment_configured": env_status
+            "environment_configured": env_status,
+            "frontend_available": os.path.exists("frontend/standalone-chat.html")
         }
     except Exception as e:
         return {
