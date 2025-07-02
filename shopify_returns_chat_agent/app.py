@@ -82,8 +82,10 @@ class MessageResponse(BaseModel):
 async def serve_chat_page():
     """Serve the standalone chat interface"""
     try:
-        # Read the HTML file
-        html_path = os.path.join("frontend", "standalone-chat.html")
+        # Get the directory where this script is located
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        html_path = os.path.join(current_dir, "frontend", "standalone-chat.html")
+        
         with open(html_path, "r", encoding="utf-8") as f:
             html_content = f.read()
         return HTMLResponse(content=html_content)
@@ -116,10 +118,15 @@ async def health_check():
         # Only check if variables exist, don't require them for health check
         env_status = all(config.values())
         
+        # Check if frontend file exists using absolute path
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        frontend_path = os.path.join(current_dir, "frontend", "standalone-chat.html")
+        
         return {
             "status": "healthy",
             "environment_configured": env_status,
-            "frontend_available": os.path.exists("frontend/standalone-chat.html")
+            "frontend_available": os.path.exists(frontend_path),
+            "frontend_path": frontend_path  # For debugging
         }
     except Exception as e:
         return {
