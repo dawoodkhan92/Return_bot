@@ -134,6 +134,54 @@ async def health_check():
             "error": str(e)
         }
 
+@app.get("/debug")
+async def debug_info():
+    """Debug endpoint to show file system info"""
+    import glob
+    
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    current_working_dir = os.getcwd()
+    
+    # List files in current directory
+    try:
+        files_in_current = os.listdir(current_dir)
+    except:
+        files_in_current = ["Error listing current dir"]
+    
+    # List files in working directory  
+    try:
+        files_in_working = os.listdir(current_working_dir)
+    except:
+        files_in_working = ["Error listing working dir"]
+        
+    # Check for frontend directory
+    frontend_path = os.path.join(current_dir, "frontend")
+    frontend_exists = os.path.exists(frontend_path)
+    
+    # List frontend files if it exists
+    frontend_files = []
+    if frontend_exists:
+        try:
+            frontend_files = os.listdir(frontend_path)
+        except:
+            frontend_files = ["Error listing frontend"]
+    
+    # Check specific HTML file
+    html_path = os.path.join(current_dir, "frontend", "standalone-chat.html")
+    html_exists = os.path.exists(html_path)
+    
+    return {
+        "current_script_dir": current_dir,
+        "current_working_dir": current_working_dir,
+        "files_in_script_dir": files_in_current,
+        "files_in_working_dir": files_in_working,
+        "frontend_dir_exists": frontend_exists,
+        "frontend_path": frontend_path,
+        "frontend_files": frontend_files,
+        "html_file_exists": html_exists,
+        "html_file_path": html_path
+    }
+
 @app.post("/chat", response_model=MessageResponse)
 async def chat(request: MessageRequest, config: dict = Depends(get_agent_config)):
     """Process a chat message through the returns agent"""
