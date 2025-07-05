@@ -106,11 +106,11 @@ async def health_check():
         )
         
         health_status = {
-            "status": "healthy",
+        "status": "healthy",
             "timestamp": datetime.utcnow().isoformat(),
             "service": "shopify-returns-agent",
             "version": "1.0.0"
-        }
+    }
         
         # Send success event to Sentry
         sentry_sdk.capture_message("Health check successful", level="info")
@@ -151,18 +151,18 @@ async def chat_endpoint(request: ChatRequest):
         with sentry_sdk.start_transaction(op="chat", name="process_return_request"):
             logger.info(f"Processing chat request for conversation: {conversation_id}")
             
-            # For now, return a simple response to test deployment
+        # For now, return a simple response to test deployment
             # TODO: Replace with actual LLM integration
             
             response_text = f"Thanks for your message: '{request.message}'. The full returns agent will be connected once deployment is working!"
             
             # Log successful interaction
             logger.info(f"Chat response generated for conversation: {conversation_id}")
-            
-            return ChatResponse(
+        
+        return ChatResponse(
                 response=response_text,
-                conversation_id=conversation_id
-            )
+            conversation_id=conversation_id
+        )
         
     except Exception as e:
         # Log error with context
