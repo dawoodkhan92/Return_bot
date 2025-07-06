@@ -415,41 +415,85 @@ Be friendly, professional, and concise. Always ask for order information first (
             
         return self.logger.get_conversation_history(self.conversation_id)
 
+    def get_state(self) -> dict:
+        """Export the current agent state as a dictionary."""
+        return {
+            "conversation_id": self.conversation_id,
+            "messages": self.messages,
+            "context": self.context
+        }
+
+    def set_state(self, state: dict):
+        """Restore the agent state from a dictionary."""
+        self.conversation_id = state.get("conversation_id")
+        self.messages = state.get("messages", [])
+        self.context = state.get("context", {})
+
+    @classmethod
+    def from_log(cls, config: dict, conversation_id: str):
+        """Rebuild agent state from conversation logs."""
+        agent = cls(config)
+        agent.conversation_id = conversation_id
+        # Retrieve conversation history from logger
+        history = agent.logger.get_conversation_history(conversation_id)
+        # Rebuild messages array
+        agent.messages = []
+        for entry in history:
+            if entry.get("user_message"):
+                agent.messages.append({"role": "user", "content": entry["user_message"]})
+            if entry.get("agent_message"):
+                agent.messages.append({"role": "assistant", "content": entry["agent_message"]})
+        # Rebuild context from tool_calls (best effort)
+        agent.context = {}
+        for entry in history:
+            for tool_call in entry.get("tool_calls", []):
+                tool = tool_call.get("tool") or tool_call.get("tool_name")
+                result = tool_call.get("result") or tool_call.get("output")
+                if tool == "lookup_order_by_id" and result and not result.get("error"):
+                    agent.context["current_order"] = result
+                elif tool == "lookup_order_by_email" and result and isinstance(result, list) and result:
+                    agent.context["available_orders"] = result
+                elif tool == "check_return_eligibility" and result:
+                    agent.context["last_eligibility_check"] = result
+                elif tool == "process_refund" and result:
+                    agent.context["last_refund"] = result
+        return agent
+
 
 if __name__ == "__main__":
     # Test the LLM agent
     import os
     from dotenv import load_dotenv
-    
     load_dotenv()
-    
     config = {
         'OPENAI_API_KEY': os.getenv('OPENAI_API_KEY'),
         'OPENAI_MODEL': os.getenv('OPENAI_MODEL', 'gpt-4o'),
         'SHOPIFY_ADMIN_TOKEN': os.getenv('SHOPIFY_ADMIN_TOKEN'),
-        'SHOPIFY_STORE_DOMAIN': os.getenv('SHOPIFY_STORE_DOMAIN')
+        'SHOPIFY_STORE_DOMAIN': os.getenv('SHOPIFY_STORE_DOMAIN'),
     }
-    
-    if not all([config['OPENAI_API_KEY'], config['SHOPIFY_ADMIN_TOKEN'], config['SHOPIFY_STORE_DOMAIN']]):
-        print("Error: Missing required environment variables")
-        print("Please set OPENAI_API_KEY, SHOPIFY_ADMIN_TOKEN, and SHOPIFY_STORE_DOMAIN")
-        exit(1)
-    
-    # Test the agent
-    agent = LLMReturnsChatAgent(config)
-    
-    print("Testing LLM Returns Chat Agent...")
-    print("=" * 50)
-    
-    # Start conversation
-    greeting = agent.start_conversation()
-    print(f"Agent: {greeting}")
-    
-    # Test with a sample message
-    test_message = "I want to return an item from order #1001"
-    print(f"\nUser: {test_message}")
-    response = agent.process_message(test_message)
-    print(f"Agent: {response}")
-    
-    print("\n" + "=" * 50)
-    print("LLM agent test completed successfully!") 
+    print("Testing state management methods...")
+    # 1. Create agent and start conversation
+    agent1 = LLMReturnsChatAgent(config)
+    agent1.start_conversation()
+    print("Initial conversation ID:", agent1.conversation_id)
+    # 2. Process a message
+    user_message = "Hi, I want to return my order."
+    response1 = agent1.process_message(user_message)
+    print("Agent response:", response1)
+    # 3. Export state
+    state = agent1.get_state()
+    print("Exported state:", state)
+    # 4. Create new agent and restore state
+    agent2 = LLMReturnsChatAgent(config)
+    agent2.set_state(state)
+    print("Restored conversation ID:", agent2.conversation_id)
+    # 5. Continue conversation
+    user_message2 = "My order number is 12345."
+    response2 = agent2.process_message(user_message2)
+    print("Agent response after state restore:", response2)
+    # 6. Test from_log if conversation_id exists
+    if agent1.conversation_id:
+        agent3 = LLMReturnsChatAgent.from_log(config, agent1.conversation_id)
+        print("Restored from log. Conversation ID:", agent3.conversation_id)
+        response3 = agent3.process_message("Is my item eligible for return?")
+        print("Agent response after log restore:", response3) 
