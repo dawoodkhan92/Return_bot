@@ -6,7 +6,21 @@ This guide will help you install the Returns Chat Widget on any Shopify store in
 
 - Admin access to your Shopify store
 - Basic knowledge of Shopify theme editing
-- The widget files (`widget.js`)
+- The production widget file (`widget.js`) - **Now consolidated into a single, feature-complete version**
+
+## 🎉 Widget Consolidation Complete
+
+We've consolidated **5 different widget versions** into one production-ready solution:
+
+### ✅ **Single Production Widget: `widget.js`**
+- **Dynamic API URL Detection** - Auto-detects Railway, localhost, or custom URLs
+- **Enhanced Integration** - Two-step API flow (/start + /chat endpoints)
+- **Connection Status Indicators** - Visual feedback for connection state  
+- **Debug Mode Support** - Configurable debugging with `window.RETURNS_DEBUG`
+- **CSS Isolation** - Prevents conflicts with existing store styles
+- **Shopify Integration** - Built-in customer and shop domain detection
+- **Mobile Optimized** - Responsive design for all devices
+- **Error Handling** - Comprehensive error management and retry logic
 
 ## 🚀 Installation Methods
 
@@ -31,23 +45,11 @@ This guide will help you install the Returns Chat Widget on any Shopify store in
 3. Add this code just **before** the `</body>` tag:
 
 ```html
-<!-- Returns Chat Widget -->
+<!-- Returns Chat Widget - Production Version -->
 <script>
-  // Widget configuration (customize as needed)
-  window.ReturnsWidgetConfig = {
-    apiUrl: 'https://shopify-returns-chat-agent-production.up.railway.app',
-    position: 'bottom-right',
-    theme: {
-      primaryColor: '#4a154b',
-      textColor: '#333',
-      backgroundColor: '#fff'
-    },
-    texts: {
-      welcome: "👋 Hi! I'm your returns assistant. I can help you look up orders and process returns.",
-      placeholder: "Ask about an order or return...",
-      buttonText: "Returns Help"
-    }
-  };
+  // Optional configuration (widget auto-detects API URL)
+  window.RETURNS_API_URL = 'https://returnbot-production.up.railway.app'; // Optional override
+  window.RETURNS_DEBUG = false; // Set to true for debugging
 </script>
 <script src="{{ 'returns-widget.js' | asset_url }}" defer></script>
 ```
@@ -74,7 +76,7 @@ If you prefer not to upload files to your theme, you can embed the widget direct
 <script>
   // Widget configuration
   window.ReturnsWidgetConfig = {
-    apiUrl: 'https://shopify-returns-chat-agent-production.up.railway.app',
+    apiUrl: 'https://returnbot-production.up.railway.app',
     position: 'bottom-right'
   };
   
@@ -102,42 +104,30 @@ For newer Shopify themes that support app blocks:
 
 ## ⚙️ Configuration Options
 
-You can customize the widget by modifying the `ReturnsWidgetConfig` object:
+The consolidated widget uses simplified configuration with smart defaults:
 
+### 🔧 **Basic Configuration:**
 ```javascript
-window.ReturnsWidgetConfig = {
-  // API endpoint (required)
-  apiUrl: 'https://shopify-returns-chat-agent-production.up.railway.app',
-  
-  // Widget position
-  position: 'bottom-right', // bottom-right, bottom-left, top-right, top-left
-  
-  // Theme customization
-  theme: {
-    primaryColor: '#4a154b',     // Main widget color
-    textColor: '#333',           // Text color
-    backgroundColor: '#fff',     // Background color
-    borderRadius: '20px'         // Border radius
-  },
-  
-  // Text customization
-  texts: {
-    welcome: "Custom welcome message",
-    placeholder: "Type your message...",
-    buttonText: "Custom Button Text",
-    offline: "We're currently offline"
-  },
-  
-  // Display options
-  showOnPages: ['all'],          // ['all'] or ['product', 'collection', 'home']
-  hideOnMobile: false,           // Hide on mobile devices
-  autoOpen: false,               // Auto-open chat on page load
-  
-  // Shopify integration
-  includeCustomerInfo: true,     // Include logged-in customer info
-  includeCartInfo: false         // Include current cart information
-};
+// Optional: Override API URL (auto-detected by default)
+window.RETURNS_API_URL = 'https://your-custom-api.com';
+
+// Optional: Enable debug mode
+window.RETURNS_DEBUG = true;
+
+// Optional: Set custom meta tag for API URL
+<meta name="returns-api-url" content="https://your-api.com">
 ```
+
+### 🎯 **Smart Auto-Detection:**
+The widget automatically detects:
+- **Railway deployments** - Uses current domain if hosted on Railway  
+- **Local development** - Uses `http://localhost:8080` for testing
+- **Custom domains** - Reads from meta tag or window variables
+- **Shopify customer data** - Includes logged-in customer information
+- **Shop domain** - Automatically detects current Shopify store
+
+### 🎨 **Styling:**
+The widget includes built-in responsive design and CSS isolation. All styling is self-contained to prevent conflicts with your theme.
 
 ---
 
@@ -240,8 +230,8 @@ window.ReturnsWidgetConfig = {
 
 If you need help with installation:
 
-1. **Check the demo**: Open `demo.html` to see how it should work
-2. **Test locally**: Use the demo file to verify widget functionality
+1. **Test on development store**: Install on a development store first to verify functionality
+2. **Check console**: Use browser developer tools to check for errors
 3. **Contact support**: Reach out with specific error messages
 4. **Theme compatibility**: Some themes may need custom adjustments
 

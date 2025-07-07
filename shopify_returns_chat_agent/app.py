@@ -9,6 +9,9 @@ import logging
 from dotenv import load_dotenv
 from datetime import datetime
 
+# Import the LLM Returns Chat Agent
+from llm_returns_chat_agent import LLMReturnsChatAgent
+
 # Load environment variables
 load_dotenv()
 
@@ -54,12 +57,13 @@ app = FastAPI(
     version="0.1.0"
 )
 
-# Configure CORS
+# Configure CORS - more restrictive for production
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, replace with specific domains
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -73,6 +77,30 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     response: str
     conversation_id: str
+
+class ConversationStartRequest(BaseModel):
+    customer_id: Optional[str] = None
+    shop_domain: Optional[str] = None
+
+# Store active conversations in memory (in production, use Redis or database)
+active_conversations: Dict[str, LLMReturnsChatAgent] = {}
+
+def get_agent_config():
+    """Get configuration for the LLM agent from environment variables."""
+    required_vars = ['OPENAI_API_KEY', 'SHOPIFY_ADMIN_TOKEN', 'SHOPIFY_STORE_DOMAIN']
+    missing_vars = [var for var in required_vars if not os.getenv(var)]
+    
+    if missing_vars:
+        raise RuntimeError(f"Missing required environment variables: {', '.join(missing_vars)}")
+    
+    return {
+        'OPENAI_API_KEY': os.getenv('OPENAI_API_KEY'),
+        'OPENAI_MODEL': os.getenv('OPENAI_MODEL', 'gpt-4o'),
+        'OPENAI_PROJECT_ID': os.getenv('OPENAI_PROJECT_ID'),
+        'OPENAI_ORG_ID': os.getenv('OPENAI_ORG_ID'),
+        'SHOPIFY_ADMIN_TOKEN': os.getenv('SHOPIFY_ADMIN_TOKEN'),
+        'SHOPIFY_STORE_DOMAIN': os.getenv('SHOPIFY_STORE_DOMAIN'),
+    }
 
 def safe_sentry_call(func, *args, **kwargs):
     """Safely call Sentry functions only if Sentry is available"""
@@ -111,9 +139,11 @@ async def root():
         "endpoints": {
             "health": "/health",
             "chat": "/chat",
+            "start": "/start",
             "docs": "/docs"
         },
-        "monitoring": "Sentry enabled" if SENTRY_AVAILABLE else "Monitoring disabled"
+        "monitoring": "Sentry enabled" if SENTRY_AVAILABLE else "Monitoring disabled",
+        "llm_agent": "Integrated with LLMReturnsChatAgent"
     }
 
 @app.get("/health")
@@ -127,13 +157,22 @@ async def health_check():
             level="info"
         )
         
+        # Test agent configuration
+        try:
+            config = get_agent_config()
+            config_status = "valid"
+        except RuntimeError as e:
+            config_status = f"invalid: {str(e)}"
+        
         health_status = {
-        "status": "healthy",
+            "status": "healthy",
             "timestamp": datetime.utcnow().isoformat(),
             "service": "shopify-returns-agent",
             "version": "1.0.0",
-            "sentry_enabled": SENTRY_AVAILABLE
-    }
+            "sentry_enabled": SENTRY_AVAILABLE,
+            "active_conversations": len(active_conversations),
+            "agent_config": config_status
+        }
         
         # Send success event to Sentry
         safe_sentry_call(sentry_sdk.capture_message, "Health check successful", level="info")
@@ -143,11 +182,56 @@ async def health_check():
         safe_sentry_call(sentry_sdk.capture_exception, e)
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/start", response_model=ChatResponse)
+async def start_conversation(request: ConversationStartRequest):
+    """Start a new conversation with the returns agent."""
+    try:
+        # Get agent configuration
+        config = get_agent_config()
+        
+        # Create new agent instance
+        agent = LLMReturnsChatAgent(config)
+        
+        # Start conversation and get greeting
+        greeting = agent.start_conversation()
+        conversation_id = agent.conversation_id
+        
+        # Store agent in active conversations
+        active_conversations[conversation_id] = agent
+        
+        # Set up Sentry context
+        safe_sentry_call(sentry_sdk.set_user, {
+            "id": request.customer_id,
+            "conversation_id": conversation_id,
+            "shop_domain": request.shop_domain,
+        })
+        
+        safe_sentry_call(sentry_sdk.set_tag, "conversation_id", conversation_id)
+        safe_sentry_call(sentry_sdk.set_tag, "shop_domain", request.shop_domain or "unknown")
+        
+        logger.info(f"Started new conversation: {conversation_id}")
+        
+        return ChatResponse(
+            response=greeting,
+            conversation_id=conversation_id
+        )
+        
+    except RuntimeError as e:
+        logger.error(f"Configuration error: {str(e)}")
+        safe_sentry_call(sentry_sdk.capture_exception, e)
+        raise HTTPException(status_code=500, detail=f"Configuration error: {str(e)}")
+    except Exception as e:
+        logger.error(f"Error starting conversation: {str(e)}")
+        safe_sentry_call(sentry_sdk.capture_exception, e)
+        raise HTTPException(status_code=500, detail=f"Error starting conversation: {str(e)}")
+
 @app.post("/chat", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest):
     """Chat endpoint for the returns agent."""
-    # Set up Sentry context for this chat interaction
-    conversation_id = request.conversation_id or str(uuid.uuid4())
+    conversation_id = request.conversation_id
+    
+    if not conversation_id:
+        raise HTTPException(status_code=400, detail="conversation_id is required. Please start a conversation first using /start endpoint.")
     
     # Add customer context to Sentry
     safe_sentry_call(sentry_sdk.set_user, {
@@ -170,26 +254,43 @@ async def chat_endpoint(request: ChatRequest):
     })
     
     try:
+        # Get agent from active conversations
+        agent = active_conversations.get(conversation_id)
+        
+        if not agent:
+            # Try to restore from logs if possible, otherwise start new conversation
+            try:
+                config = get_agent_config()
+                agent = LLMReturnsChatAgent.from_log(config, conversation_id)
+                active_conversations[conversation_id] = agent
+            except:
+                raise HTTPException(
+                    status_code=404, 
+                    detail="Conversation not found. Please start a new conversation using /start endpoint."
+                )
+        
         # Start a Sentry transaction for performance monitoring
         if SENTRY_AVAILABLE:
             with sentry_sdk.start_transaction(op="chat", name="process_return_request"):
                 logger.info(f"Processing chat request for conversation: {conversation_id}")
                 
-                # For now, return a simple response to test deployment
-                # TODO: Replace with actual LLM integration
-                response_text = f"Thanks for your message: '{request.message}'. The full returns agent will be connected once deployment is working!"
+                # Process message with LLM agent
+                response_text = agent.process_message(request.message)
         else:
             logger.info(f"Processing chat request for conversation: {conversation_id}")
-            response_text = f"Thanks for your message: '{request.message}'. The full returns agent will be connected once deployment is working!"
-            
+            response_text = agent.process_message(request.message)
+        
         # Log successful interaction
         logger.info(f"Chat response generated for conversation: {conversation_id}")
         
         return ChatResponse(
-                response=response_text,
+            response=response_text,
             conversation_id=conversation_id
         )
         
+    except HTTPException:
+        # Re-raise HTTP exceptions
+        raise
     except Exception as e:
         # Log error with context
         logger.error(f"Chat error for conversation {conversation_id}: {str(e)}")
@@ -232,7 +333,9 @@ async def railway_debug():
             "sentry_enabled": SENTRY_AVAILABLE,
             "sentry_dsn_configured": bool(os.getenv("SENTRY_DSN")),
             "python_path": os.getcwd(),
-            "port": os.getenv("PORT", "not_set")
+            "port": os.getenv("PORT", "not_set"),
+            "active_conversations": len(active_conversations),
+            "agent_config_check": "valid" if get_agent_config() else "invalid"
         }
         
         # Track successful Railway deployment
@@ -253,6 +356,14 @@ async def startup_event():
     """Track application startup in Sentry"""
     safe_sentry_call(sentry_sdk.capture_message, "FastAPI application starting up", level="info")
     safe_sentry_call(sentry_sdk.set_tag, "railway.startup", "success")
+    
+    # Test agent configuration on startup
+    try:
+        config = get_agent_config()
+        logger.info("✅ LLM agent configuration validated successfully")
+    except RuntimeError as e:
+        logger.error(f"❌ LLM agent configuration invalid: {str(e)}")
+        logger.error("Please check your environment variables")
 
 if __name__ == "__main__":
     import uvicorn

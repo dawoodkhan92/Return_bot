@@ -5,7 +5,6 @@ A beautiful, responsive chat widget that can be embedded on any Shopify store to
 ## 📁 Files Overview
 
 - **`widget.js`** - Main widget JavaScript file (production ready)
-- **`demo.html`** - Interactive demo showing the widget in action
 - **`INSTALLATION.md`** - Complete installation guide for Shopify stores
 - **`styles.css`** - Standalone CSS (not needed if using widget.js)
 - **`index.html`** - Standalone chat interface (alternative implementation)
@@ -16,11 +15,11 @@ A beautiful, responsive chat widget that can be embedded on any Shopify store to
 
 1. **Download** the `widget.js` file
 2. **Follow** the step-by-step instructions in `INSTALLATION.md`
-3. **Test** the widget using the `demo.html` file first
+3. **Test** the widget on your development store first
 
 ### For Developers
 
-1. **Demo the widget**: Open `demo.html` in your browser
+1. **Review the code**: Examine `widget.js` for customization options
 2. **Customize**: Edit the configuration options in `widget.js`
 3. **Deploy**: Follow the Shopify installation guide
 
@@ -45,11 +44,9 @@ The widget connects to your FastAPI backend and can:
 - **Log conversations** for customer service review
 - **Maintain conversation context** across multiple messages
 
-## 🖥️ Demo
+## 🧪 Testing
 
-Open `demo.html` in your browser to see the widget in action on a simulated store page.
-
-### Test Messages:
+Test the widget with these example messages:
 - "I need help with order #123456"
 - "What's your return policy?"
 - "I want to return an item" 
@@ -127,17 +124,17 @@ Expected response format:
 ## 🚦 Installation Status
 
 ✅ **Widget Created** - Ready for Shopify installation  
-✅ **Demo Ready** - Test with demo.html  
+✅ **Production Ready** - Consolidated and optimized  
 ✅ **Installation Guide** - Complete documentation  
 ✅ **Mobile Optimized** - Responsive design  
 ✅ **API Integration** - Connected to Railway backend  
 
 ## 📋 Installation Checklist
 
-- [ ] Test widget with `demo.html`
 - [ ] Upload `widget.js` to Shopify theme assets
 - [ ] Add widget script to `theme.liquid`
 - [ ] Configure widget settings
+- [ ] Test on development store
 - [ ] Test on live store
 - [ ] Verify mobile experience
 - [ ] Set up analytics (optional)
@@ -146,11 +143,11 @@ Expected response format:
 
 If you encounter issues:
 
-1. **Check demo first** - Verify widget works in `demo.html`
-2. **Review installation guide** - Follow `INSTALLATION.md` step by step
-3. **Check browser console** - Look for JavaScript errors
-4. **Test API connection** - Verify backend is accessible
-5. **Check mobile** - Test on actual mobile devices
+1. **Review installation guide** - Follow `INSTALLATION.md` step by step
+2. **Check browser console** - Look for JavaScript errors
+3. **Test API connection** - Verify backend is accessible
+4. **Check mobile** - Test on actual mobile devices
+5. **Verify configuration** - Ensure all settings are correct
 
 ## 🔄 Updates
 
