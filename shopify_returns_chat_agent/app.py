@@ -279,7 +279,14 @@ async def chat_endpoint(request: ChatRequest):
                 config = get_agent_config()
                 agent = LLMReturnsChatAgent.from_log(config, conversation_id)
                 active_conversations[conversation_id] = agent
-            except:
+            except AttributeError as e:
+                logger.error(f"LLMReturnsChatAgent.from_log() not implemented: {str(e)}")
+                raise HTTPException(
+                    status_code=500,
+                    detail="Conversation recovery is not supported. Please start a new conversation using /start endpoint."
+                )
+            except Exception as e:
+                logger.error(f"Error restoring conversation: {str(e)}")
                 raise HTTPException(
                     status_code=404, 
                     detail="Conversation not found. Please start a new conversation using /start endpoint."
