@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi.responses import JSONResponse, HTMLResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Dict, Any, Optional
 import os
@@ -8,6 +9,7 @@ import uuid
 import logging
 from dotenv import load_dotenv
 from datetime import datetime
+from pathlib import Path
 
 # Import the LLM Returns Chat Agent
 from llm_returns_chat_agent import LLMReturnsChatAgent
@@ -66,6 +68,20 @@ app.add_middleware(
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
+
+# Mount static files
+static_dir = Path(__file__).parent / "frontend"
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
+# Serve widget.js at root path for Shopify integration
+@app.get("/widget.js")
+async def serve_widget():
+    """Serve the widget.js file for Shopify integration"""
+    widget_path = Path(__file__).parent / "frontend" / "widget.js"
+    if widget_path.exists():
+        return FileResponse(widget_path, media_type="application/javascript")
+    else:
+        raise HTTPException(status_code=404, detail="Widget file not found")
 
 # Simple models
 class ChatRequest(BaseModel):
