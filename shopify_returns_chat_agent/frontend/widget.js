@@ -12,8 +12,8 @@
             backgroundColor: '#fff'
         },
         texts: {
-            welcome: "👋 Starting your returns assistant...",
-            placeholder: "Ask about an order or return...",
+            welcome: "👋 Hi! I'm your returns assistant. I can help you with order returns, exchanges, and refunds. What can I help you with today?",
+            placeholder: "Ask about an order return, exchange, or refund...",
             buttonText: "Returns Help"
         }
     };
@@ -133,6 +133,25 @@
                     flex-direction: column;
                     overflow: hidden;
                     animation: slideUp 0.3s ease;
+                }
+                
+                /* Mobile responsive */
+                @media screen and (max-width: 480px) {
+                    .returns-chat-panel {
+                        position: fixed;
+                        bottom: 0;
+                        right: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 70vh;
+                        border-radius: 15px 15px 0 0;
+                        max-height: 500px;
+                    }
+                    
+                    #returns-widget {
+                        bottom: 10px;
+                        right: 10px;
+                    }
                 }
                 
                 @keyframes slideUp {
@@ -289,14 +308,6 @@
                     font-size: 11px;
                     color: #827717;
                     font-family: monospace;
-                }
-
-                @media (max-width: 480px) {
-                    .returns-chat-panel {
-                        width: calc(100vw - 40px);
-                        height: calc(100vh - 100px);
-                        max-height: 500px;
-                    }
                 }
             </style>
         `;
