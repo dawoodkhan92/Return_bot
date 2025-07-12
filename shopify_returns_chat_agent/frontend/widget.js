@@ -1,23 +1,57 @@
-// Shopify Returns Chat Widget
+// Shopify Returns Chat Widget - Integration Fixed Version
 (function() {
     'use strict';
 
-    // Configuration
+    // Configuration with dynamic API URL detection
     const CONFIG = {
-        apiUrl: 'https://shopify-returns-chat-agent-production.up.railway.app',
+        // Try to auto-detect the API URL, fallback to hardcoded
+        apiUrl: window.RETURNS_API_URL || detectApiUrl() || 'https://returnbot-production.up.railway.app',
+        debug: window.RETURNS_DEBUG || false,
         theme: {
             primaryColor: '#4a154b',
             backgroundColor: '#fff'
         },
         texts: {
-            welcome: "👋 Hi! I'm your returns assistant. I can help you look up orders and process returns.",
-            placeholder: "Ask about an order or return...",
+            welcome: "👋 Hi! I'm your returns assistant. I can help you with order returns, exchanges, and refunds. What can I help you with today?",
+            placeholder: "Ask about an order return, exchange, or refund...",
             buttonText: "Returns Help"
         }
     };
 
     let isOpen = false;
     let conversationId = null;
+    let isInitialized = false;
+
+    // Auto-detect API URL from current domain (for Railway deployments)
+    function detectApiUrl() {
+        // If we're on a Shopify store, try to detect the Railway URL
+        const currentHost = window.location.hostname;
+        
+        // Common Railway URL patterns
+        if (currentHost.includes('railway.app')) {
+            return `https://${currentHost}`;
+        }
+        
+        // For local development
+        if (currentHost === 'localhost' || currentHost.includes('127.0.0.1')) {
+            return 'http://localhost:8080';
+        }
+        
+        // Try to get from meta tag if set by store owner
+        const metaTag = document.querySelector('meta[name="returns-api-url"]');
+        if (metaTag) {
+            return metaTag.getAttribute('content');
+        }
+        
+        return null;
+    }
+
+    // Debug logging
+    function debugLog(message, data = null) {
+        if (CONFIG.debug) {
+            console.log('[Returns Widget]', message, data);
+        }
+    }
 
     // Create the widget
     function createWidget() {
@@ -34,25 +68,29 @@
             <div class="returns-chat-panel" id="chat-panel" style="display: none;">
                 <div class="returns-header">
                     <h3>🛍️ Returns Assistant</h3>
-                    <button class="returns-close" id="chat-close">×</button>
+                    <div class="returns-header-actions">
+                        <span class="returns-status" id="connection-status">●</span>
+                        <button class="returns-close" id="chat-close">×</button>
+                    </div>
                 </div>
                 <div class="returns-messages" id="messages">
-                    <div class="returns-message assistant">
+                    <div class="returns-message system">
                         ${CONFIG.texts.welcome}
                     </div>
                 </div>
                 <div class="returns-input">
                     <form id="chat-form">
-                        <input type="text" id="chat-input" placeholder="${CONFIG.texts.placeholder}" maxlength="500" />
-                        <button type="submit">Send</button>
+                        <input type="text" id="chat-input" placeholder="${CONFIG.texts.placeholder}" maxlength="500" disabled />
+                        <button type="submit" disabled>Send</button>
                     </form>
                 </div>
+                ${CONFIG.debug ? `<div class="returns-debug">API: ${CONFIG.apiUrl}</div>` : ''}
             </div>
         `;
 
         document.body.appendChild(widget);
         bindEvents();
-        initChat();
+        debugLog('Widget created', { apiUrl: CONFIG.apiUrl });
     }
 
     // Inject CSS styles
@@ -97,6 +135,25 @@
                     animation: slideUp 0.3s ease;
                 }
                 
+                /* Mobile responsive */
+                @media screen and (max-width: 480px) {
+                    .returns-chat-panel {
+                        position: fixed;
+                        bottom: 0;
+                        right: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 70vh;
+                        border-radius: 15px 15px 0 0;
+                        max-height: 500px;
+                    }
+                    
+                    #returns-widget {
+                        bottom: 10px;
+                        right: 10px;
+                    }
+                }
+                
                 @keyframes slideUp {
                     from { opacity: 0; transform: translateY(20px); }
                     to { opacity: 1; transform: translateY(0); }
@@ -116,6 +173,21 @@
                     font-size: 16px;
                     font-weight: 600;
                 }
+                
+                .returns-header-actions {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                }
+                
+                .returns-status {
+                    font-size: 12px;
+                    opacity: 0.8;
+                }
+                
+                .returns-status.connected { color: #4CAF50; }
+                .returns-status.connecting { color: #FF9800; }
+                .returns-status.error { color: #F44336; }
                 
                 .returns-close {
                     background: none;
@@ -168,6 +240,23 @@
                     border-bottom-left-radius: 4px;
                 }
                 
+                .returns-message.system {
+                    align-self: flex-start;
+                    background: #e3f2fd;
+                    color: #1565c0;
+                    border-bottom-left-radius: 4px;
+                    font-style: italic;
+                }
+                
+                .returns-message.error {
+                    align-self: center;
+                    background: #ffebee;
+                    color: #c62828;
+                    border: 1px solid #ffcdd2;
+                    text-align: center;
+                    font-size: 13px;
+                }
+                
                 .returns-input {
                     padding: 15px;
                     border-top: 1px solid #eee;
@@ -191,6 +280,11 @@
                     border-color: ${CONFIG.theme.primaryColor};
                 }
                 
+                .returns-input input:disabled {
+                    background-color: #f5f5f5;
+                    cursor: not-allowed;
+                }
+                
                 .returns-input button {
                     background: ${CONFIG.theme.primaryColor};
                     color: white;
@@ -202,61 +296,105 @@
                     transition: opacity 0.2s;
                 }
                 
-                .returns-input button:hover:not(:disabled) {
-                    opacity: 0.9;
-                }
-                
                 .returns-input button:disabled {
                     opacity: 0.6;
                     cursor: not-allowed;
                 }
-
-                @media (max-width: 480px) {
-                    #returns-widget {
-                        bottom: 10px;
-                        right: 10px;
-                        left: 10px;
-                    }
-                    
-                    .returns-chat-panel {
-                        width: 100%;
-                        height: 400px;
-                    }
-                    
-                    .returns-chat-button {
-                        width: 100%;
-                        text-align: center;
-                    }
+                
+                .returns-debug {
+                    padding: 8px 12px;
+                    background: #fffde7;
+                    border-top: 1px solid #f9fbe7;
+                    font-size: 11px;
+                    color: #827717;
+                    font-family: monospace;
                 }
             </style>
         `;
-        
+
+        // Remove existing styles
+        const existingStyles = document.getElementById('returns-widget-styles');
+        if (existingStyles) {
+            existingStyles.remove();
+        }
+
+        // Inject new styles
         document.head.insertAdjacentHTML('beforeend', styles);
     }
 
-    // Bind event listeners
+    // Bind events
     function bindEvents() {
         document.getElementById('chat-toggle').addEventListener('click', toggleChat);
         document.getElementById('chat-close').addEventListener('click', closeChat);
         document.getElementById('chat-form').addEventListener('submit', sendMessage);
     }
 
-    // Initialize chat
-    function initChat() {
-        conversationId = 'conv_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+    // Initialize chat session
+    async function initChat() {
+        debugLog('Initializing chat...');
+        setConnectionStatus('connecting');
+        
+        try {
+            const response = await fetch(`${CONFIG.apiUrl}/start`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    customer_id: getCustomerId(),
+                    shop_domain: getShopDomain()
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            conversationId = data.conversation_id;
+            
+            debugLog('Chat initialized', { conversationId });
+            setConnectionStatus('connected');
+            enableInput();
+            
+            // Update welcome message if provided
+            if (data.message) {
+                const systemMessage = document.querySelector('.returns-message.system');
+                if (systemMessage) {
+                    systemMessage.textContent = data.message;
+                }
+            }
+            
+            isInitialized = true;
+            
+        } catch (error) {
+            console.error('Failed to initialize chat:', error);
+            debugLog('Chat initialization failed', error);
+            setConnectionStatus('error');
+            addMessage('Sorry, I\'m having trouble connecting. Please try again later.', 'error');
+        }
     }
 
-    // Toggle chat panel
+    // Toggle chat open/close
     function toggleChat() {
-        const panel = document.getElementById('chat-panel');
         if (isOpen) {
-            panel.style.display = 'none';
-            isOpen = false;
+            closeChat();
         } else {
+            const panel = document.getElementById('chat-panel');
             panel.style.display = 'flex';
             isOpen = true;
+            
+            // Initialize chat if not already done
+            if (!isInitialized) {
+                initChat();
+            }
+            
+            // Focus input
             setTimeout(() => {
-                document.getElementById('chat-input').focus();
+                const input = document.getElementById('chat-input');
+                if (input && !input.disabled) {
+                    input.focus();
+                }
             }, 100);
         }
     }
@@ -272,59 +410,119 @@
         event.preventDefault();
         
         const input = document.getElementById('chat-input');
-        const button = event.target.querySelector('button');
         const message = input.value.trim();
         
-        if (!message) return;
+        if (!message || !conversationId) {
+            return;
+        }
 
-        // Add user message
+        // Add user message to chat
         addMessage(message, 'user');
-        
-        // Clear input and disable
         input.value = '';
-        input.disabled = true;
-        button.disabled = true;
-        button.textContent = 'Sending...';
-
+        
+        // Disable input while processing
+        disableInput();
+        
         try {
-            // Call API
+            debugLog('Sending message', { message, conversationId });
+            
             const response = await fetch(`${CONFIG.apiUrl}/chat`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                },
                 body: JSON.stringify({
                     message: message,
                     conversation_id: conversationId
                 })
             });
 
-            if (!response.ok) throw new Error('Network error');
-            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
             const data = await response.json();
-            addMessage(data.response, 'assistant');
+            
+            debugLog('Received response', data);
+            
+            // Add assistant response
+            if (data.response) {
+                addMessage(data.response, 'assistant');
+            }
             
         } catch (error) {
-            console.error('Chat error:', error);
-            addMessage('Sorry, I encountered an error. Please try again.', 'assistant');
+            console.error('Error sending message:', error);
+            debugLog('Message send failed', error);
+            addMessage('Sorry, I encountered an error. Please try again.', 'error');
         } finally {
-            // Re-enable input
-            input.disabled = false;
-            button.disabled = false;
-            button.textContent = 'Send';
-            input.focus();
+            enableInput();
         }
     }
 
     // Add message to chat
     function addMessage(text, sender) {
-        const messages = document.getElementById('messages');
+        const messagesContainer = document.getElementById('messages');
         const messageDiv = document.createElement('div');
         messageDiv.className = `returns-message ${sender}`;
         messageDiv.textContent = text;
-        messages.appendChild(messageDiv);
-        messages.scrollTop = messages.scrollHeight;
+        messagesContainer.appendChild(messageDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 
-    // Initialize widget
+    // Set connection status
+    function setConnectionStatus(status) {
+        const statusElement = document.getElementById('connection-status');
+        if (statusElement) {
+            statusElement.className = `returns-status ${status}`;
+            const statusText = status === 'connected' ? '●' : status === 'connecting' ? '◐' : '●';
+            statusElement.textContent = statusText;
+        }
+    }
+
+    // Enable input
+    function enableInput() {
+        const input = document.getElementById('chat-input');
+        const button = document.querySelector('#chat-form button');
+        
+        if (input) {
+            input.disabled = false;
+            input.placeholder = CONFIG.texts.placeholder;
+        }
+        if (button) {
+            button.disabled = false;
+        }
+    }
+
+    // Disable input
+    function disableInput() {
+        const input = document.getElementById('chat-input');
+        const button = document.querySelector('#chat-form button');
+        
+        if (input) {
+            input.disabled = true;
+            input.placeholder = 'Sending...';
+        }
+        if (button) {
+            button.disabled = true;
+        }
+    }
+
+    // Get customer ID (if available from Shopify)
+    function getCustomerId() {
+        // Try to get from Shopify's customer object
+        return window.ShopifyAnalytics?.meta?.page?.customerId || 
+               window.meta?.page?.customerId || 
+               null;
+    }
+
+    // Get shop domain
+    function getShopDomain() {
+        return window.Shopify?.shop || 
+               window.ShopifyAnalytics?.meta?.page?.shop || 
+               window.location.hostname;
+    }
+
+    // Initialize widget when DOM is ready
     function init() {
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', createWidget);
@@ -333,13 +531,7 @@
         }
     }
 
-    // Expose public API
-    window.ReturnsWidget = {
-        init: init,
-        open: () => isOpen ? null : toggleChat(),
-        close: () => isOpen ? toggleChat() : null
-    };
-
-    // Auto-initialize
+    // Start initialization
     init();
+
 })();
