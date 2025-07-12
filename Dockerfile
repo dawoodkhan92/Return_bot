@@ -17,7 +17,7 @@ COPY . .
 WORKDIR /app
 
 # Expose port (Railway will set the PORT environment variable)
-EXPOSE 8000
+EXPOSE $PORT
 
-# Use the same start command as specified in railway.json
-CMD ["hypercorn", "main:app", "--bind", "0.0.0.0:8000"] 
+# Use Railway's PORT environment variable instead of hardcoded port
+CMD ["sh", "-c", "hypercorn main:app --bind 0.0.0.0:$PORT"] 
