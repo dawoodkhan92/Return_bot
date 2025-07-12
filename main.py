@@ -15,7 +15,8 @@ sys.path.append(str(Path(__file__).parent / "shopify_returns_chat_agent"))
 from app import app
 
 # Railway compatibility: Ensure the app is accessible at the module level
-__app = app
+# This is crucial for gunicorn to find the app
+app = app
 
 if __name__ == "__main__":
     import uvicorn
@@ -29,7 +30,7 @@ if __name__ == "__main__":
     
     # Run with Railway-compatible settings
     uvicorn.run(
-        "main:app",
+        app,
         host="0.0.0.0",
         port=port,
         log_level="info"
