@@ -78,6 +78,11 @@
                         ${CONFIG.texts.welcome}
                     </div>
                 </div>
+                <div class="returns-typing-indicator" id="typing-indicator" style="display: none;">
+                    <div class="returns-typing-dot"></div>
+                    <div class="returns-typing-dot"></div>
+                    <div class="returns-typing-dot"></div>
+                </div>
                 <div class="returns-input">
                     <form id="chat-form">
                         <input type="text" id="chat-input" placeholder="${CONFIG.texts.placeholder}" maxlength="500" disabled />
@@ -256,6 +261,39 @@
                     text-align: center;
                     font-size: 13px;
                 }
+
+                .returns-typing-indicator {
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
+                    padding: 8px 12px;
+                    background: #f1f3f4;
+                    border-radius: 15px;
+                    border-bottom-left-radius: 4px;
+                    align-self: flex-start;
+                    margin: 0 15px 10px;
+                }
+
+                .returns-typing-dot {
+                    width: 8px;
+                    height: 8px;
+                    background: #9ca3af;
+                    border-radius: 50%;
+                    animation: returns-typing-animation 1.4s infinite ease-in-out;
+                }
+
+                .returns-typing-dot:nth-child(2) {
+                    animation-delay: 0.2s;
+                }
+
+                .returns-typing-dot:nth-child(3) {
+                    animation-delay: 0.4s;
+                }
+
+                @keyframes returns-typing-animation {
+                    0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+                    30% { transform: translateY(-4px); opacity: 1; }
+                }
                 
                 .returns-input {
                     padding: 15px;
@@ -420,8 +458,9 @@
         addMessage(message, 'user');
         input.value = '';
         
-        // Disable input while processing
+        // Disable input and show typing indicator
         disableInput();
+        showTyping();
         
         try {
             debugLog('Sending message', { message, conversationId });
@@ -455,6 +494,7 @@
             debugLog('Message send failed', error);
             addMessage('Sorry, I encountered an error. Please try again.', 'error');
         } finally {
+            hideTyping();
             enableInput();
         }
     }
@@ -469,12 +509,29 @@
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 
+    // Show/hide typing indicator
+    function showTyping() {
+        const indicator = document.getElementById('typing-indicator');
+        if (indicator) {
+            indicator.style.display = 'flex';
+        }
+        const messagesContainer = document.getElementById('messages');
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    function hideTyping() {
+        const indicator = document.getElementById('typing-indicator');
+        if (indicator) {
+            indicator.style.display = 'none';
+        }
+    }
+
     // Set connection status
     function setConnectionStatus(status) {
         const statusElement = document.getElementById('connection-status');
         if (statusElement) {
             statusElement.className = `returns-status ${status}`;
-            const statusText = status === 'connected' ? '●' : status === 'connecting' ? '◐' : '●';
+            const statusText = status === 'connecting' ? '◐' : '●';
             statusElement.textContent = statusText;
         }
     }
@@ -487,6 +544,7 @@
         if (input) {
             input.disabled = false;
             input.placeholder = CONFIG.texts.placeholder;
+            input.focus();
         }
         if (button) {
             button.disabled = false;

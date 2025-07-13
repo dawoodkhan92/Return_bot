@@ -3,51 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Returns Assistant</title>
+    <title>Standalone Chat Widget Test</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛍️</text></svg>">
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f2f5;
+        }
+        .info {
+            text-align: center;
+            max-width: 500px;
+        }
+    </style>
 </head>
 <body>
-    <div class="chat-container">
-        <div class="chat-header">
-            <h1>🛍️ Returns Assistant</h1>
-            <p>I can help you look up orders and process returns</p>
-        </div>
-        <div class="chat-messages" id="chat-messages">
-            <!-- Messages will be inserted here dynamically -->
-            <div class="message system">
-                👋 Hello! I'm your returns assistant. I can help you look up orders and process returns. What would you like to do today?
-            </div>
-        </div>
-        <div class="typing-indicator hidden" id="typing-indicator">
-            <div class="typing-dots">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-            <span class="typing-text">Assistant is typing...</span>
-        </div>
-        <div class="chat-input">
-            <form id="message-form">
-                <input 
-                    type="text" 
-                    id="user-input" 
-                    placeholder="Type your message here..." 
-                    autocomplete="off"
-                    maxlength="500"
-                >
-                <button type="submit" id="send-button">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M2 21L23 12L2 3V10L17 12L2 14V21Z" fill="currentColor"/>
-                    </svg>
-                </button>
-            </form>
-        </div>
+
+    <div class="info">
+        <h1>Chat Widget Demo</h1>
+        <p>This page demonstrates the standalone chat widget. The widget should appear in the bottom right corner.</p>
+        <p>It is configured to connect to a local server at <code>http://localhost:8000</code> by default.</p>
     </div>
-    <div class="connection-status" id="connection-status">
-        <span class="status-indicator"></span>
-        <span class="status-text">Connected</span>
-    </div>
-    <script src="script.js"></script>
+
+    <!-- This is where the chat widget will be rendered -->
+    <div id="returns-chat-widget-container"></div>
+
+    <!-- Include the widget script -->
+    <script src="widget.js"></script>
+
+    <!-- Initialize the widget -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            new window.ShopifyReturnsChat({
+                container: "#returns-chat-widget-container",
+                // Replace with your backend URL for testing
+                apiBaseUrl: "http://localhost:8000"
+            });
+        });
+    </script>
+
 </body>
-</html> 
+</html>

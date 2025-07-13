@@ -16,7 +16,6 @@ from app import app
 
 # Railway compatibility: Ensure the app is accessible at the module level
 # This is crucial for gunicorn to find the app
-app = app
 
 if __name__ == "__main__":
     import uvicorn

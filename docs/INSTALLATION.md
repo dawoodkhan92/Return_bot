@@ -24,7 +24,7 @@ Before you begin, ensure you have:
 git clone https://github.com/your-username/shopify-returns-chat-agent.git
 
 # Navigate to the project directory
-cd shopify-returns-chat-agent
+cd shopify_returns_chat_agent
 ```
 
 ## 🐍 **Step 2: Python Environment Setup**
@@ -41,10 +41,10 @@ venv\Scripts\activate
 # On macOS/Linux:
 source venv/bin/activate
 
-# Navigate to the chat agent directory
+# Navigate to the project directory
 cd shopify_returns_chat_agent
 
-# Install required packages
+# Install required packages from the project directory
 pip install -r requirements.txt
 ```
 
@@ -57,10 +57,10 @@ conda create --name returns-agent python=3.8
 # Activate the environment
 conda activate returns-agent
 
-# Navigate to the chat agent directory
+# Navigate to the project directory
 cd shopify_returns_chat_agent
 
-# Install required packages
+# Install required packages from the project directory
 pip install -r requirements.txt
 ```
 
