@@ -41,11 +41,11 @@ venv\Scripts\activate
 # On macOS/Linux:
 source venv/bin/activate
 
-# Navigate to the chat agent directory
-cd shopify_returns_chat_agent
+# Navigate to the project directory
+cd shopify-returns-chat-agent
 
-# Install required packages
-pip install -r requirements.txt
+# Install required packages from the root directory
+pip install -r ../requirements.txt
 ```
 
 ### Option B: Using Conda
@@ -57,11 +57,11 @@ conda create --name returns-agent python=3.8
 # Activate the environment
 conda activate returns-agent
 
-# Navigate to the chat agent directory
-cd shopify_returns_chat_agent
+# Navigate to the project directory
+cd shopify-returns-chat-agent
 
-# Install required packages
-pip install -r requirements.txt
+# Install required packages from the root directory
+pip install -r ../requirements.txt
 ```
 
 ## 🔑 **Step 3: API Credentials Setup**
