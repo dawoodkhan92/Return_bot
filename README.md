@@ -43,6 +43,9 @@ Follow these steps to get the project running on your local machine.
 3.  **Install the dependencies:**
     ```bash
     pip install -r requirements.txt
+
+    # For development, install the testing dependencies as well:
+    pip install -r requirements-dev.txt
     ```
 
 ### 3. Configuration
@@ -71,14 +74,31 @@ The application can be run in two ways:
 
 1.  **As a CLI Chatbot (for testing):**
     ```bash
-    python shopify_returns_chat_agent/llm_chat.py
+    python scripts/llm_chat.py
     ```
 
 2.  **As a Web Service (for web widget integration):**
     ```bash
-    uvicorn shopify_returns_chat_agent.app:app --host 0.0.0.0 --port 8000
+    uvicorn main:app --host 0.0.0.0 --port 8000
     ```
     You can then access the API at `http://localhost:8000`.
+
+## Project Structure
+
+Here is an overview of the key files and directories:
+
+-   `main.py`: The main entry point for the FastAPI web application.
+-   `shopify_returns_chat_agent/`: The core application package.
+    -   `app.py`: Defines the FastAPI application and its endpoints.
+    -   `llm_returns_chat_agent.py`: Contains the primary logic for the AI agent.
+    -   `tools/`: Holds the tools the agent uses, such as `order_lookup.py` and `refund_processor.py`.
+    -   `frontend/`: Contains the embeddable web chat widget.
+-   `scripts/`: Contains supplementary scripts, like the CLI chat client.
+-   `tests/`: Contains all the tests for the application.
+-   `docs/`: Contains all project documentation.
+-   `requirements.txt`: Core application dependencies.
+-   `requirements-dev.txt`: Development and testing dependencies.
+-   `Procfile` & `railway.json`: Configuration for Railway deployment.
 
 ## 🧪 Running Tests
 
@@ -95,3 +115,7 @@ For more detailed information, please see the following documents:
 - **[Architecture Guide](./docs/ARCHITECTURE.md):** A deep dive into the system architecture.
 - **[Installation Guide](./docs/INSTALLATION.md):** Detailed setup instructions.
 - **[API Reference](./docs/API_REFERENCE.md):** API endpoint documentation.
+- **[Agent README](./docs/AGENT_README.md):** The original README for the agent.
+- **[Deployment Guide](./docs/DEPLOYMENT.md):** Instructions for deploying the application.
+- **[Integration Guide](./docs/INTEGRATION_GUIDE.md):** A guide for integrating the chat widget.
+- **[Product Requirements](./docs/PRODUCT_REQUIREMENTS.md):** The product requirements document.

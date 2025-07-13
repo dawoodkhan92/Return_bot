@@ -1,163 +1,78 @@
 # 🛍️ Shopify Returns Chat Widget
 
-A beautiful, responsive chat widget that can be embedded on any Shopify store to provide instant customer support for orders and returns.
-
-## 📁 Files Overview
-
-- **`widget.js`** - Main widget JavaScript file (production ready)
-- **`INSTALLATION.md`** - Complete installation guide for Shopify stores
-- **`styles.css`** - Standalone CSS (not needed if using widget.js)
-- **`index.html`** - Standalone chat interface (alternative implementation)
-
-## 🚀 Quick Start
-
-### For Shopify Store Owners
-
-1. **Download** the `widget.js` file
-2. **Follow** the step-by-step instructions in `INSTALLATION.md`
-3. **Test** the widget on your development store first
-
-### For Developers
-
-1. **Review the code**: Examine `widget.js` for customization options
-2. **Customize**: Edit the configuration options in `widget.js`
-3. **Deploy**: Follow the Shopify installation guide
+This directory contains the frontend assets for a beautiful, responsive, and embeddable chat widget designed to provide instant customer support for e-commerce returns on any Shopify store.
 
 ## ✨ Features
 
-- 🎨 **Beautiful Design** - Modern, clean interface that matches any theme
-- 📱 **Mobile Responsive** - Optimized for all screen sizes
-- ⚡ **Fast Loading** - Lightweight and performance optimized
-- 🔧 **Highly Customizable** - Colors, text, positioning, and behavior
-- 🌐 **Universal Compatibility** - Works with all Shopify themes
-- 🔒 **Secure** - HTTPS communication with your backend
-- 📊 **Analytics Ready** - Built-in tracking capabilities
+-   🎨 **Modern Design**: A clean, modern interface that can be easily customized to match any theme.
+-   📱 **Fully Responsive**: Optimized for a seamless experience on desktops, tablets, and mobile devices.
+-   ⚡ **Lightweight & Fast**: Performance-optimized to ensure it doesn't slow down your store.
+-   🔧 **Easy to Integrate**: Add to any Shopify theme by pasting a single script tag.
+-   🔒 **Secure**: All communication with the backend is handled over HTTPS.
 
-## 🎯 Widget Capabilities
+## 📁 File Overview
 
-The widget connects to your FastAPI backend and can:
-
-- **Look up orders** by order number or email
-- **Check return policies** and eligibility  
-- **Process return requests** with automated workflows
-- **Provide instant answers** about shipping, exchanges, and refunds
-- **Log conversations** for customer service review
-- **Maintain conversation context** across multiple messages
-
-## 🧪 Testing
-
-Test the widget with these example messages:
-- "I need help with order #123456"
-- "What's your return policy?"
-- "I want to return an item" 
-- "Track my order"
-
-## ⚙️ Configuration
-
-Basic configuration example:
-
-```javascript
-window.ReturnsWidgetConfig = {
-  apiUrl: 'https://your-api-endpoint.com',
-  theme: {
-    primaryColor: '#4a154b',
-    backgroundColor: '#fff'
-  },
-  texts: {
-    welcome: "Hi! I'm your returns assistant.",
-    buttonText: "Returns Help"
-  }
-};
-```
-
-See `INSTALLATION.md` for complete configuration options.
-
-## 🔧 Customization
-
-The widget is highly customizable:
-
-- **Colors & Styling** - Match your brand perfectly
-- **Text & Messages** - Customize all user-facing text
-- **Position & Behavior** - Control where and how it appears
-- **Mobile Experience** - Optimize for mobile users
-- **Analytics** - Track usage and performance
-
-## 📱 Mobile Experience
-
-The widget includes:
-- Touch-friendly interface
-- Responsive design that adapts to screen size
-- Mobile-optimized chat bubbles
-- Keyboard-friendly input
-- Gesture support
-
-## 🔗 Integration
-
-### Backend API
-The widget communicates with your FastAPI backend at:
-```
-POST /chat
-```
-
-Expected request format:
-```json
-{
-  "message": "Customer message",
-  "conversation_id": "unique_conversation_id"
-}
-```
-
-Expected response format:
-```json
-{
-  "response": "Assistant response",
-  "conversation_id": "same_conversation_id"
-}
-```
-
-### Shopify Integration
-- Works with all Shopify themes
-- No app installation required
-- Simple theme code modification
-- Compatible with Online Store 2.0
-
-## 🚦 Installation Status
-
-✅ **Widget Created** - Ready for Shopify installation  
-✅ **Production Ready** - Consolidated and optimized  
-✅ **Installation Guide** - Complete documentation  
-✅ **Mobile Optimized** - Responsive design  
-✅ **API Integration** - Connected to Railway backend  
-
-## 📋 Installation Checklist
-
-- [ ] Upload `widget.js` to Shopify theme assets
-- [ ] Add widget script to `theme.liquid`
-- [ ] Configure widget settings
-- [ ] Test on development store
-- [ ] Test on live store
-- [ ] Verify mobile experience
-- [ ] Set up analytics (optional)
-
-## 🆘 Support
-
-If you encounter issues:
-
-1. **Review installation guide** - Follow `INSTALLATION.md` step by step
-2. **Check browser console** - Look for JavaScript errors
-3. **Test API connection** - Verify backend is accessible
-4. **Check mobile** - Test on actual mobile devices
-5. **Verify configuration** - Ensure all settings are correct
-
-## 🔄 Updates
-
-To update the widget:
-1. Replace `widget.js` content with new version
-2. Clear browser cache
-3. Test functionality
-
-The widget automatically handles API version compatibility.
+-   **`widget.js`**: The core, production-ready JavaScript file that powers the chat widget.
+-   **`styles.css`**: The CSS styles for the chat widget.
+-   **`index.html`**: A standalone HTML file for testing and demonstrating the widget locally.
 
 ---
 
-**Ready to install? Start with `INSTALLATION.md` for complete instructions! 🚀** 
+## 🚀 Quick Installation Guide
+
+You can add the chat widget to your Shopify store in just a few minutes.
+
+### Step 1: Add the Widget to Your Theme
+
+1.  From your Shopify Admin, go to **Online Store > Themes**.
+2.  Find the theme you want to edit, click the **"..."** button, and select **"Edit code"**.
+3.  In the code editor, open the `theme.liquid` file from the "Layout" directory.
+
+### Step 2: Paste the Script Tag
+
+Scroll to the bottom of the `theme.liquid` file. Just before the closing `</body>` tag, paste the following code snippet:
+
+```html
+<!-- Returns Chat Widget -->
+<script>
+  // This setting tells the widget where your backend is hosted.
+  // Replace this with the public URL of your deployed application (e.g., from Railway).
+  window.RETURNS_API_URL = "YOUR_BACKEND_API_URL";
+
+  // Optional: Set to true to see detailed logs in the browser console for debugging.
+  window.RETURNS_DEBUG = false;
+</script>
+<script src="YOUR_BACKEND_API_URL/widget.js" async></script>
+<!-- End Returns Chat Widget -->
+```
+
+**Important:** Replace `YOUR_BACKEND_API_URL` in **both** places with the actual public URL of your deployed backend.
+
+### Step 3: Save and Verify
+
+Click **"Save"**. The returns chat widget should now appear on your storefront, typically in the bottom-right corner.
+
+---
+
+## 🧪 Local Testing
+
+To test the widget locally, you can open the `index.html` file in your browser. By default, it will try to connect to a backend running on `http://localhost:8000`. You can modify the `apiBaseUrl` in the `widget.js` initialization script within `index.html` to point to your desired backend.
+
+## 🎨 Customization
+
+You can customize the widget's appearance by overriding the CSS styles in your theme's main stylesheet.
+
+**Example:**
+
+```css
+/* Customize the widget's floating button */
+#returns-widget-button {
+  background: linear-gradient(45deg, #5e3a8c, #8a5fb9) !important;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.25) !important;
+}
+
+/* Customize the chat window's header */
+#returns-widget-chat .chat-header {
+  background: linear-gradient(45deg, #5e3a8c, #8a5fb9) !important;
+}
+```
