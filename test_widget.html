@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Widget</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .content {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        p {
+            color: #666;
+            line-height: 1.6;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <h1>Welcome to our store</h1>
+        <p>This is a test page to demonstrate the Returns Chat Widget.</p>
+        <p>Look for the chat button in the bottom-right corner!</p>
+        <p>The widget should load automatically and allow you to test the returns flow.</p>
+    </div>
+
+    <!-- Returns Chat Widget -->
+    <script>
+        window.RETURNS_API_URL = 'http://localhost:8000';
+        window.RETURNS_DEBUG = true;
+    </script>
+    <script src="http://localhost:8000/static/widget.js"></script>
+</body>
+</html>

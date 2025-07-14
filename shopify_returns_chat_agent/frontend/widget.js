@@ -73,8 +73,8 @@
         const widget = document.createElement('div');
         widget.id = 'returns-widget';
         widget.innerHTML = `
-            <div class="returns-chat-button" id="chat-toggle">
-                <span>${CONFIG.texts.buttonText}</span>
+            <div class="returns-chat-button ${CONFIG.animations.buttonPulse ? 'pulse' : ''}" id="chat-toggle">
+                <span>` + CONFIG.texts.buttonText + `</span>
             </div>
             <div class="returns-chat-panel" id="chat-panel" style="display: none;">
                 <div class="returns-header">
@@ -91,18 +91,18 @@
                 </div>
                 <div class="returns-messages" id="messages">
                     <div class="returns-message system">
-                        ${CONFIG.texts.welcome}
+                        ` + CONFIG.texts.welcome + `
                     </div>
                 </div>
                 <div class="returns-typing-indicator" id="typing-indicator" style="display: none;">
-                    <span class="typing-text">${CONFIG.texts.thinking}</span>
+                    <span class="typing-text">` + CONFIG.texts.thinking + `</span>
                     <div class="returns-typing-dot"></div>
                     <div class="returns-typing-dot"></div>
                     <div class="returns-typing-dot"></div>
                 </div>
                 <div class="returns-input">
                     <form id="chat-form">
-                        <input type="text" id="chat-input" placeholder="${CONFIG.texts.placeholder}" maxlength="500" disabled />
+                        <input type="text" id="chat-input" placeholder="` + CONFIG.texts.placeholder + `" maxlength="500" disabled />
                         <button type="submit" disabled>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -111,7 +111,7 @@
                         </button>
                     </form>
                 </div>
-                ${CONFIG.debug ? `<div class="returns-debug">API: ${CONFIG.apiUrl}</div>` : ''}
+                ` + (CONFIG.debug ? `<div class="returns-debug">API: ` + CONFIG.apiUrl + `</div>` : '') + `
             </div>
         `;
 
@@ -122,6 +122,10 @@
 
     // Inject CSS styles
     function injectCSS() {
+        const primaryColor = CONFIG.theme.primaryColor;
+        const secondaryColor = CONFIG.theme.secondaryColor;
+        const messageDuration = CONFIG.animations.messageDuration;
+        
         const styles = `
             <style id="returns-widget-styles">
                 #returns-widget {
@@ -133,7 +137,7 @@
                 }
                 
                 .returns-chat-button {
-                    background: linear-gradient(135deg, ${CONFIG.theme.primaryColor}, ${CONFIG.theme.secondaryColor});
+                    background: linear-gradient(135deg, ` + primaryColor + `, ` + secondaryColor + `);
                     color: white;
                     padding: 14px 24px;
                     border-radius: 30px;
@@ -173,15 +177,14 @@
                     transform: translateY(-2px) scale(1.01);
                 }
                 
-                ${CONFIG.animations.buttonPulse ? `
-                .returns-chat-button {
+                .returns-chat-button.pulse {
                     animation: gentle-pulse 3s ease-in-out infinite;
                 }
                 
                 @keyframes gentle-pulse {
                     0%, 100% { transform: scale(1); }
                     50% { transform: scale(1.02); }
-                }` : ''}
+                }
                 
                 .returns-chat-panel {
                     position: absolute;
@@ -249,7 +252,7 @@
                 }
                 
                 .returns-header {
-                    background: linear-gradient(135deg, ${CONFIG.theme.primaryColor}, ${CONFIG.theme.secondaryColor});
+                    background: linear-gradient(135deg, ` + primaryColor + `, ` + secondaryColor + `);
                     color: white;
                     padding: 20px 24px;
                     display: flex;
@@ -348,14 +351,14 @@
                     word-wrap: break-word;
                     line-height: 1.5;
                     font-size: 14px;
-                    animation: messageSlideIn ${CONFIG.animations.messageDuration}ms cubic-bezier(0.4, 0, 0.2, 1);
+                    animation: messageSlideIn ` + messageDuration + `ms cubic-bezier(0.4, 0, 0.2, 1);
                     position: relative;
                     margin: 4px 0;
                 }
                 
                 .returns-message.user {
                     align-self: flex-end;
-                    background: linear-gradient(135deg, ${CONFIG.theme.primaryColor}, ${CONFIG.theme.secondaryColor});
+                    background: linear-gradient(135deg, ` + primaryColor + `, ` + secondaryColor + `);
                     color: white;
                     border-bottom-right-radius: 6px;
                     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
@@ -370,7 +373,7 @@
                     width: 0;
                     height: 0;
                     border: 8px solid transparent;
-                    border-left-color: ${CONFIG.theme.secondaryColor};
+                    border-left-color: ` + secondaryColor + `;
                     border-bottom: 0;
                     border-right: 0;
                 }
@@ -457,7 +460,7 @@
                 .returns-typing-dot {
                     width: 10px;
                     height: 10px;
-                    background: linear-gradient(135deg, ${CONFIG.theme.primaryColor}, ${CONFIG.theme.secondaryColor});
+                    background: linear-gradient(135deg, ` + primaryColor + `, ` + secondaryColor + `);
                     border-radius: 50%;
                     animation: returns-typing-animation 1.4s infinite ease-in-out;
                     box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
@@ -505,7 +508,7 @@
                 }
                 
                 .returns-input input:focus {
-                    border-color: ${CONFIG.theme.primaryColor};
+                    border-color: ` + primaryColor + `;
                     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1), 0 4px 12px rgba(0, 0, 0, 0.05);
                     transform: translateY(-1px);
                 }
@@ -516,7 +519,7 @@
                 }
                 
                 .returns-input button {
-                    background: linear-gradient(135deg, ${CONFIG.theme.primaryColor}, ${CONFIG.theme.secondaryColor});
+                    background: linear-gradient(135deg, ` + primaryColor + `, ` + secondaryColor + `);
                     color: white;
                     border: none;
                     padding: 12px 18px;
@@ -583,7 +586,7 @@
                 }
                 
                 .quick-action-btn:hover {
-                    background: linear-gradient(135deg, ${CONFIG.theme.primaryColor}, ${CONFIG.theme.secondaryColor});
+                    background: linear-gradient(135deg, ` + primaryColor + `, ` + secondaryColor + `);
                     color: white;
                     transform: translateY(-1px);
                     box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);

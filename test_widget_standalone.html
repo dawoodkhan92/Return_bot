@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Widget Test - Demo Mode</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .content {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        p {
+            color: #666;
+            line-height: 1.6;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .status {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <h1>🛍️ returns-demo-synthiumai</h1>
+        <p><strong>Browse our latest products</strong></p>
+        <p>This is a demo store showcasing the AI-powered returns chat widget.</p>
+        <p>Look for the beautiful chat button in the bottom-right corner!</p>
+        
+        <div class="status">
+            <h3>🎯 Demo Features:</h3>
+            <ul>
+                <li>✨ Beautiful animations and smooth interactions</li>
+                <li>🤖 AI personality with empathy and helpfulness</li>
+                <li>📱 Mobile-responsive design</li>
+                <li>⚡ Quick action buttons for common tasks</li>
+                <li>🎨 Professional gradient themes</li>
+            </ul>
+        </div>
+        
+        <p><em>Click the chat button to start experiencing the future of customer service!</em></p>
+    </div>
+
+    <!-- Returns Chat Widget - Updated with corrected syntax -->
+    <script>
+        (function() {
+            'use strict';
+
+            // Configuration 
+            const CONFIG = {
+                apiUrl: 'http://localhost:8080',
+                debug: true,
+                theme: {
+                    primaryColor: '#667eea',
+                    secondaryColor: '#764ba2',
+                    backgroundColor: '#fff',
+                    textColor: '#333',
+                    successColor: '#10b981',
+                    errorColor: '#ef4444'
+                },
+                texts: {
+                    welcome: "✨ Hi there! I'm Maya, your AI returns assistant. I'm here to make returns and exchanges super easy for you. What can I help you with today?",
+                    placeholder: "Ask me anything about returns, exchanges, or refunds...",
+                    buttonText: "💬 Returns Help",
+                    thinking: "Let me think about that...",
+                    typing: "AI is typing"
+                },
+                animations: {
+                    messageDuration: 300,
+                    typingDelay: 1000,
+                    buttonPulse: true
+                }
+            };
+
+            let isOpen = false;
+            let conversationId = null;
+            let isInitialized = false;
+
+            // Create the widget HTML
+            function createWidget() {
+                const widget = document.createElement('div');
+                widget.id = 'returns-widget';
+                widget.innerHTML = 
+                    '<div class="returns-chat-button pulse" id="chat-toggle">' +
+                        '<span>' + CONFIG.texts.buttonText + '</span>' +
+                    '</div>' +
+                    '<div class="returns-chat-panel" id="chat-panel" style="display: none;">' +
+                        '<div class="returns-header">' +
+                            '<h3>🤖 AI Returns Assistant</h3>' +
+                            '<div class="returns-header-actions">' +
+                                '<span class="returns-status connected" id="connection-status">●</span>' +
+                                '<button class="returns-close" id="chat-close">×</button>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="quick-actions" id="quick-actions" style="display: flex;">' +
+                            '<button class="quick-action-btn" data-action="check-order">📦 Check Order Status</button>' +
+                            '<button class="quick-action-btn" data-action="start-return">🔄 Start Return</button>' +
+                            '<button class="quick-action-btn" data-action="exchange-item">🔄 Exchange Item</button>' +
+                        '</div>' +
+                        '<div class="returns-messages" id="messages">' +
+                            '<div class="returns-message system">' +
+                                CONFIG.texts.welcome +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="returns-input">' +
+                            '<form id="chat-form">' +
+                                '<input type="text" id="chat-input" placeholder="' + CONFIG.texts.placeholder + '" maxlength="500" />' +
+                                '<button type="submit">Send</button>' +
+                            '</form>' +
+                        '</div>' +
+                    '</div>';
+
+                document.body.appendChild(widget);
+                injectCSS();
+                bindEvents();
+            }
+
+            // Inject CSS
+            function injectCSS() {
+                const primaryColor = CONFIG.theme.primaryColor;
+                const secondaryColor = CONFIG.theme.secondaryColor;
+                
+                const css = `
+                <style id="returns-widget-styles">
+                    #returns-widget {
+                        position: fixed;
+                        bottom: 20px;
+                        right: 20px;
+                        z-index: 999999;
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    }
+                    
+                    .returns-chat-button {
+                        background: linear-gradient(135deg, ${primaryColor}, ${secondaryColor});
+                        color: white;
+                        padding: 14px 24px;
+                        border-radius: 30px;
+                        cursor: pointer;
+                        box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+                        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                        user-select: none;
+                        font-weight: 500;
+                        font-size: 15px;
+                    }
+                    
+                    .returns-chat-button:hover {
+                        transform: translateY(-4px) scale(1.02);
+                        box-shadow: 0 12px 40px rgba(102, 126, 234, 0.4);
+                    }
+                    
+                    .returns-chat-button.pulse {
+                        animation: gentle-pulse 3s ease-in-out infinite;
+                    }
+                    
+                    @keyframes gentle-pulse {
+                        0%, 100% { transform: scale(1); }
+                        50% { transform: scale(1.02); }
+                    }
+                    
+                    .returns-chat-panel {
+                        position: absolute;
+                        bottom: 70px;
+                        right: 0;
+                        width: 380px;
+                        height: 500px;
+                        background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+                        border-radius: 20px;
+                        box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+                        display: flex;
+                        flex-direction: column;
+                        overflow: hidden;
+                        animation: slideUpScale 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                    }
+                    
+                    @keyframes slideUpScale {
+                        from { opacity: 0; transform: translateY(30px) scale(0.9); }
+                        to { opacity: 1; transform: translateY(0) scale(1); }
+                    }
+                    
+                    .returns-header {
+                        background: linear-gradient(135deg, ${primaryColor}, ${secondaryColor});
+                        color: white;
+                        padding: 20px 24px;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                    }
+                    
+                    .returns-header h3 {
+                        margin: 0;
+                        font-size: 18px;
+                        font-weight: 600;
+                    }
+                    
+                    .returns-header-actions {
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                    }
+                    
+                    .returns-status.connected { color: #4CAF50; }
+                    
+                    .returns-close {
+                        background: none;
+                        border: none;
+                        color: white;
+                        font-size: 20px;
+                        cursor: pointer;
+                        padding: 0;
+                        width: 24px;
+                        height: 24px;
+                        border-radius: 4px;
+                    }
+                    
+                    .returns-close:hover {
+                        background: rgba(255,255,255,0.1);
+                    }
+                    
+                    .quick-actions {
+                        padding: 15px 20px;
+                        background: #f8fafc;
+                        border-bottom: 1px solid #e2e8f0;
+                        display: flex;
+                        gap: 8px;
+                        flex-wrap: wrap;
+                    }
+                    
+                    .quick-action-btn {
+                        background: linear-gradient(135deg, #ffffff, #f1f5f9);
+                        border: 1px solid #e2e8f0;
+                        border-radius: 20px;
+                        padding: 8px 12px;
+                        font-size: 13px;
+                        color: #475569;
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                        font-weight: 500;
+                    }
+                    
+                    .quick-action-btn:hover {
+                        background: linear-gradient(135deg, ${primaryColor}, ${secondaryColor});
+                        color: white;
+                        transform: translateY(-1px);
+                    }
+                    
+                    .returns-messages {
+                        flex: 1;
+                        padding: 15px;
+                        overflow-y: auto;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 10px;
+                    }
+                    
+                    .returns-message {
+                        padding: 12px 16px;
+                        border-radius: 18px;
+                        max-width: 85%;
+                        word-wrap: break-word;
+                        line-height: 1.5;
+                        font-size: 14px;
+                        animation: messageSlideIn 0.3s ease;
+                    }
+                    
+                    @keyframes messageSlideIn {
+                        from { opacity: 0; transform: translateY(15px) scale(0.95); }
+                        to { opacity: 1; transform: translateY(0) scale(1); }
+                    }
+                    
+                    .returns-message.system {
+                        align-self: center;
+                        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+                        color: #1e40af;
+                        border-radius: 18px;
+                        text-align: center;
+                        max-width: 90%;
+                        font-weight: 500;
+                    }
+                    
+                    .returns-input {
+                        padding: 15px;
+                        border-top: 1px solid #eee;
+                    }
+                    
+                    .returns-input form {
+                        display: flex;
+                        gap: 8px;
+                    }
+                    
+                    .returns-input input {
+                        flex: 1;
+                        padding: 12px 18px;
+                        border: 2px solid #e2e8f0;
+                        border-radius: 25px;
+                        outline: none;
+                        font-size: 14px;
+                        transition: all 0.3s ease;
+                    }
+                    
+                    .returns-input input:focus {
+                        border-color: ${primaryColor};
+                        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+                    }
+                    
+                    .returns-input button {
+                        background: linear-gradient(135deg, ${primaryColor}, ${secondaryColor});
+                        color: white;
+                        border: none;
+                        padding: 12px 18px;
+                        border-radius: 25px;
+                        cursor: pointer;
+                        font-weight: 500;
+                        transition: all 0.3s ease;
+                    }
+                    
+                    .returns-input button:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+                    }
+                </style>`;
+
+                document.head.insertAdjacentHTML('beforeend', css);
+            }
+
+            // Bind events
+            function bindEvents() {
+                document.getElementById('chat-toggle').addEventListener('click', toggleChat);
+                document.getElementById('chat-close').addEventListener('click', closeChat);
+                document.getElementById('chat-form').addEventListener('submit', handleDemoMessage);
+                
+                // Quick actions
+                document.querySelectorAll('.quick-action-btn').forEach(btn => {
+                    btn.addEventListener('click', handleQuickAction);
+                });
+            }
+
+            // Demo message handler
+            function handleDemoMessage(event) {
+                event.preventDefault();
+                const input = document.getElementById('chat-input');
+                const message = input.value.trim();
+                
+                if (!message) return;
+                
+                addMessage(message, 'user');
+                input.value = '';
+                
+                // Demo responses
+                setTimeout(() => {
+                    const responses = [
+                        "Thanks for reaching out! I'd be happy to help you with that. Can you provide your order number?",
+                        "I understand your concern. Let me look into that for you right away!",
+                        "That's a great question! Our return policy allows returns within 30 days. I can help you get started.",
+                        "Perfect! I can definitely help you with an exchange. What size are you looking for?",
+                        "I see you're interested in checking your order status. I can help with that!"
+                    ];
+                    const response = responses[Math.floor(Math.random() * responses.length)];
+                    addMessage(response, 'assistant');
+                }, 1000);
+            }
+
+            // Quick action handler
+            function handleQuickAction(event) {
+                const action = event.target.getAttribute('data-action');
+                const input = document.getElementById('chat-input');
+                
+                let message = '';
+                switch(action) {
+                    case 'check-order':
+                        message = "I'd like to check my order status";
+                        break;
+                    case 'start-return':
+                        message = "I need to return an item";
+                        break;
+                    case 'exchange-item':
+                        message = "I'd like to exchange an item for a different size";
+                        break;
+                }
+                
+                if (message) {
+                    input.value = message;
+                    setTimeout(() => {
+                        const form = document.getElementById('chat-form');
+                        form.dispatchEvent(new Event('submit'));
+                    }, 500);
+                }
+            }
+
+            // Add message
+            function addMessage(text, sender) {
+                const messagesContainer = document.getElementById('messages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `returns-message ${sender}`;
+                messageDiv.textContent = text;
+                messagesContainer.appendChild(messageDiv);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+
+            // Toggle chat
+            function toggleChat() {
+                const panel = document.getElementById('chat-panel');
+                if (isOpen) {
+                    panel.style.display = 'none';
+                    isOpen = false;
+                } else {
+                    panel.style.display = 'flex';
+                    isOpen = true;
+                    setTimeout(() => {
+                        document.getElementById('chat-input').focus();
+                    }, 300);
+                }
+            }
+
+            // Close chat
+            function closeChat() {
+                document.getElementById('chat-panel').style.display = 'none';
+                isOpen = false;
+            }
+
+            // Initialize
+            function init() {
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', createWidget);
+                } else {
+                    createWidget();
+                }
+            }
+
+            init();
+        })();
+    </script>
+</body>
+</html>

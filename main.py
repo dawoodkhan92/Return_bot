@@ -23,9 +23,9 @@ if __name__ == "__main__":
     # Get port from environment (Railway provides this)
     port = int(os.getenv("PORT", 8000))
     
-    print(f"🚀 Starting FastAPI app on port {port}")
-    print(f"📁 Working directory: {os.getcwd()}")
-    print(f"🐍 Python path: {sys.path}")
+    print(f"[INFO] Starting FastAPI app on port {port}")
+    print(f"[INFO] Working directory: {os.getcwd()}")
+    print(f"[INFO] Python path: {sys.path}")
     
     # Run with Railway-compatible settings
     uvicorn.run(

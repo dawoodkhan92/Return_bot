@@ -40,13 +40,13 @@ try:
             release=os.getenv("SENTRY_RELEASE", "v0.1.0"),
         )
         SENTRY_AVAILABLE = True
-        print("✅ Sentry monitoring initialized")
+        print("[OK] Sentry monitoring initialized")
     else:
-        print("⚠️ Sentry DSN not found - monitoring disabled")
+        print("[WARNING] Sentry DSN not found - monitoring disabled")
 except ImportError:
-    print("⚠️ Sentry SDK not available - monitoring disabled")
+    print("[WARNING] Sentry SDK not available - monitoring disabled")
 except Exception as e:
-    print(f"⚠️ Sentry initialization failed: {e}")
+    print(f"[WARNING] Sentry initialization failed: {e}")
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -365,15 +365,16 @@ async def railway_debug():
 @app.on_event("startup")
 async def startup_event():
     """Track application startup in Sentry"""
-    safe_sentry_call(sentry_sdk.capture_message, "FastAPI application starting up", level="info")
-    safe_sentry_call(sentry_sdk.set_tag, "railway.startup", "success")
+    if SENTRY_AVAILABLE:
+        safe_sentry_call(sentry_sdk.capture_message, "FastAPI application starting up", level="info")
+        safe_sentry_call(sentry_sdk.set_tag, "railway.startup", "success")
     
     # Test agent configuration on startup
     try:
         config = get_agent_config()
-        logger.info("✅ LLM agent configuration validated successfully")
+        logger.info("[OK] LLM agent configuration validated successfully")
     except RuntimeError as e:
-        logger.error(f"❌ LLM agent configuration invalid: {str(e)}")
+        logger.error(f"[ERROR] LLM agent configuration invalid: {str(e)}")
         logger.error("Please check your environment variables")
 
 if __name__ == "__main__":
