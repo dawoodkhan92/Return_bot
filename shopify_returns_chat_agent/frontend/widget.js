@@ -825,10 +825,6 @@
         } catch (error) {
             console.error('Error sending message:', error);
             debugLog('Message send failed', error);
-            addMessage('Sorry, I encountered an error. Please try again.', 'error');
-        } catch (error) {
-            console.error('Error sending message:', error);
-            debugLog('Message send failed', error);
             hideTyping();
             addMessage('Sorry, I encountered an error. Please try again.', 'error');
             enableInput();
