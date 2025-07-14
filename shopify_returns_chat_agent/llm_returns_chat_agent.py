@@ -160,41 +160,26 @@ class LLMReturnsChatAgent:
         # Generate new conversation ID
         self.conversation_id = str(uuid.uuid4())
         
-        # Initialize conversation with enhanced system prompt
+        # Initialize conversation with system prompt
         self.messages = [
             {
                 "role": "system", 
-                "content": """You are Maya, an AI returns assistant for an apparel e-commerce store. You're enthusiastic, empathetic, and genuinely want to help customers have a great experience.
+                "content": """You are a helpful and friendly returns assistant for an apparel e-commerce store. 
 
-🎯 Your Personality:
-- Warm and conversational (like talking to a helpful friend)
-- Use emojis sparingly but effectively
-- Show empathy when customers are frustrated
-- Be proactive in offering solutions
-- Celebrate successful resolutions
-
-✨ Your Role:
-1. Help customers process returns and exchanges smoothly
+Your role is to:
+1. Help customers process returns and exchanges for their orders
 2. Look up order information when needed
-3. Check return eligibility with store policies
-4. Process approved refunds efficiently
-5. Turn potentially negative experiences into positive ones
+3. Check return eligibility based on store policies
+4. Process approved refunds
+5. Provide clear, helpful guidance throughout the process
 
-📋 Store Policies:
+Store policies:
 - 30-day return window from order date
-- Items must be in original condition with tags
-- Free returns for defective items
-- Valid reasons: wrong size, defective, not as described, changed mind, damaged
+- Items must be in original condition
+- Some items may be excluded from returns
+- Valid return reasons include: wrong size, defective, not as described, changed mind, damaged
 
-💬 Communication Style:
-- Use natural, conversational language
-- Ask clarifying questions to understand their needs
-- Provide clear next steps
-- Acknowledge their feelings ("I understand that's frustrating...")
-- Offer alternatives when possible
-- Keep responses concise but complete
-
-🚀 Always start by understanding what they need help with, then gather order information if needed."""
+Be friendly, professional, and concise. Always ask for order information first (order number or email address) if the customer hasn't provided it. Guide them step by step through the return process."""
             }
         ]
         
@@ -202,40 +187,40 @@ class LLMReturnsChatAgent:
         try:
             response = self.client.chat.completions.create(
                 model=self.model,
-                messages=self.messages + [{"role": "user", "content": "Hi there! I need help with something."}],
-                max_tokens=200,
-                temperature=0.8
+                messages=self.messages + [{"role": "user", "content": "Hi, I'd like to start a return."}],
+                max_tokens=150,
+                temperature=0.7
             )
             
             greeting = response.choices[0].message.content
             
             # Add greeting to message history
-            self.messages.append({"role": "user", "content": "Hi there! I need help with something."})
+            self.messages.append({"role": "user", "content": "Hi, I'd like to start a return."})
             self.messages.append({"role": "assistant", "content": greeting})
             
             # Log the interaction
             self.logger.log_interaction(
                 conversation_id=self.conversation_id,
-                user_msg="Hi there! I need help with something.",
+                user_msg="Hi, I'd like to start a return.",
                 agent_msg=greeting
             )
             
             return greeting
             
         except Exception as e:
-            # Enhanced fallback greeting if OpenAI fails
+            # Fallback greeting if OpenAI fails
             fallback_greeting = (
-                "Hi there! ✨ I'm Maya, your AI returns assistant. I'm here to make returns and exchanges super easy for you! "
-                "Whether you need to return something, check an order, or just have questions about our policies, I'm here to help. "
-                "What can I assist you with today?"
+                "Hello! I'm here to help you with your return. "
+                "To get started, I'll need either your order number or the email address "
+                "you used when placing the order. How can I assist you today?"
             )
             
-            self.messages.append({"role": "user", "content": "Hi there! I need help with something."})
+            self.messages.append({"role": "user", "content": "Hi, I'd like to start a return."})
             self.messages.append({"role": "assistant", "content": fallback_greeting})
             
             self.logger.log_interaction(
                 conversation_id=self.conversation_id,
-                user_msg="Hi there! I need help with something.",
+                user_msg="Hi, I'd like to start a return.",
                 agent_msg=fallback_greeting,
                 metadata={"error": f"OpenAI API error: {str(e)}"}
             )
@@ -260,8 +245,8 @@ class LLMReturnsChatAgent:
                 messages=self.messages,
                 tools=self.tools,
                 tool_choice="auto",
-                max_tokens=600,
-                temperature=0.8
+                max_tokens=500,
+                temperature=0.7
             )
             
             response_message = response.choices[0].message
