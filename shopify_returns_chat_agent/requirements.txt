@@ -7,9 +7,4 @@ requests>=2.32.0
 python-dotenv>=1.0.0
 openai>=1.0.0  # for LLM integration
 pydantic>=2.0.0
-sentry-sdk[fastapi]>=1.40.0  # Comprehensive monitoring and error tracking
-
-# Testing dependencies
-pytest>=8.0.0
-pytest-mock>=3.0.0
-responses>=0.25.0 
+sentry-sdk[fastapi]>=1.40.0  # Comprehensive monitoring and error tracking 
