@@ -6,7 +6,8 @@
       "Bash(rm:*)",
       "Bash(touch:*)",
       "Bash(./venv/Scripts/python.exe -c \"from shopify_returns_chat_agent.llm_returns_chat_agent import LLMReturnsChatAgent; print(''✅ Core AI agent imports work'')\")",
-      "Bash(./venv/Scripts/python.exe -c \"from main import app; print(''✅ Main app imports work'')\")"
+      "Bash(./venv/Scripts/python.exe -c \"from main import app; print(''✅ Main app imports work'')\")",
+      "Bash(git checkout:*)"
     ],
     "deny": []
   }
